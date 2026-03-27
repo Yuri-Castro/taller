@@ -1,6 +1,7 @@
 import re
 import unittest
 import uuid
+from typing import NoReturn
 
 
 class UsernameException(Exception):
@@ -12,6 +13,10 @@ class PaymentException(Exception):
 
 
 class CreditCardException(Exception):
+    pass
+
+
+class BalanceException(Exception):
     pass
 
 
@@ -49,6 +54,9 @@ class User:
     def add_to_balance(self, amount):
         self.balance += float(amount)
 
+    def remove_from_balance(self, amount: float) -> NoReturn:
+        self.balance -= float(amount)
+
     def add_credit_card(self, credit_card_number):
         if self.credit_card_number is not None:
             raise CreditCardException("Only one credit card per user!")
@@ -60,10 +68,19 @@ class User:
             raise CreditCardException("Invalid credit card number.")
 
     def pay(self, target, amount, note):
-        # TODO: add logic to pay with card or balance
+        payment = None
+        if self.balance < amount:
+            payment = self.pay_with_card(target, amount, note)
+        else:
+            payment = self.pay_with_balance(target, amount, note)
+
+    def register_activity(self, activities: list) -> NoReturn:
         pass
 
-    def pay_with_card(self, target, amount, note):
+    def retrieve_activity(self):
+        return self.activities
+
+    def pay_with_card(self, target: "User", amount: float, note: str) -> Payment:
         amount = float(amount)
 
         if self.username == target.username:
@@ -83,7 +100,18 @@ class User:
 
     def pay_with_balance(self, target, amount, note):
         # TODO: add code here
-        pass
+
+        if self.username == target.username:
+            raise PaymentException("User cannot pay themselves.")
+
+        if self.balance < amount or self.balance == 0:
+            raise BalanceException("No available amount for paying with balance")
+
+        self.remove_from_balance(amount=amount)
+        target.add_to_balance(amount=amount)
+        payment = Payment(amount, self, target, note)
+
+        return payment
 
     def _is_valid_credit_card(self, credit_card_number):
         return credit_card_number in ["4111111111111111", "4242424242424242"]
