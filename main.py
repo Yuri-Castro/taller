@@ -1,7 +1,7 @@
 import re
 import unittest
 import uuid
-from typing import NoReturn
+from typing import List, NoReturn, Union
 
 
 class UsernameException(Exception):
@@ -43,10 +43,6 @@ class User:
         else:
             raise UsernameException("Username not valid.")
 
-    def retrieve_feed(self):
-        # TODO: add code here
-        return []
-
     def add_friend(self, new_friend):
         # TODO: add code here
         pass
@@ -73,9 +69,15 @@ class User:
             payment = self.pay_with_card(target, amount, note)
         else:
             payment = self.pay_with_balance(target, amount, note)
+        if payment:
+            self.register_activity(payment)
 
-    def register_activity(self, activities: list) -> NoReturn:
-        pass
+    def register_activity(self, activities: Union[Payment, List[Payment]]) -> NoReturn:
+        if not isinstance(activities, list):
+            activities = [activities]
+
+        for activity in activities:
+            self.activities.append(activity)
 
     def retrieve_activity(self):
         return self.activities
@@ -135,7 +137,12 @@ class MiniVenmo:
     def render_feed(self, feed):
         # Bobby paid Carol $5.00 for Coffee
         # Carol paid Bobby $15.00 for Lunch
-        # TODO: add code here
+        for activity in feed:
+            if isinstance(activity, Payment):
+                print(
+                    f"{activity.actor.username} paid {activity.target.username} ${activity.amount} for {activity.note} "
+                )
+
         pass
 
     @classmethod
@@ -154,7 +161,7 @@ class MiniVenmo:
         except PaymentException as e:
             print(e)
 
-        feed = bobby.retrieve_feed()
+        feed = bobby.retrieve_activity()
         venmo.render_feed(feed)
 
         bobby.add_friend(carol)
