@@ -20,6 +20,13 @@ class BalanceException(Exception):
     pass
 
 
+class UserAddEvent:
+    def __init__(self, actor, target):
+        self.id = str(uuid.uuid4())
+        self.actor = actor
+        self.target = target
+
+
 class Payment:
 
     def __init__(self, amount, actor, target, note):
@@ -44,8 +51,9 @@ class User:
             raise UsernameException("Username not valid.")
 
     def add_friend(self, new_friend):
-        # TODO: add code here
-        pass
+        friendadd_event = UserAddEvent(actor=self, target=new_friend)
+        self.friends.append(new_friend)
+        self.register_activity(friendadd_event)
 
     def add_to_balance(self, amount):
         self.balance += float(amount)
