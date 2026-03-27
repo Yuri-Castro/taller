@@ -42,11 +42,12 @@ Activity = Union[Payment, UserAddEvent]
 
 class User:
 
-    def __init__(self, username):
+    def __init__(self, username, useradd_event_callback=None):
         self.credit_card_number = None
         self.balance = 0.0
         self.activities = []
         self.friends = []
+        self.useradd_event_callback = useradd_event_callback
 
         if self._is_valid_username(username):
             self.username = username
@@ -57,6 +58,9 @@ class User:
         friendadd_event = UserAddEvent(actor=self, target=new_friend)
         self.friends.append(new_friend)
         self.register_activity(friendadd_event)
+
+        if self.useradd_event_callback:
+            self.useradd_event_callback([friendadd_event])
 
     def add_to_balance(self, amount):
         self.balance += float(amount)
@@ -144,6 +148,8 @@ class MiniVenmo:
         user = User(username)
         user.add_credit_card(credit_card_number)
         user.add_to_balance(balance)
+
+        user.useradd_event_callback = self.render_feed
 
         return user
 
