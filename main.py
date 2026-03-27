@@ -30,6 +30,8 @@ class User:
     def __init__(self, username):
         self.credit_card_number = None
         self.balance = 0.0
+        self.activities = []
+        self.friends = []
 
         if self._is_valid_username(username):
             self.username = username
@@ -96,8 +98,11 @@ class User:
 
 class MiniVenmo:
     def create_user(self, username: str, balance: float, credit_card_number: str):
-        # TODO: add code here
-        return User(username=username)
+        user = User(username)
+        user.add_credit_card(credit_card_number)
+        user.add_to_balance(balance)
+
+        return user
 
     def render_feed(self, feed):
         # Bobby paid Carol $5.00 for Coffee
