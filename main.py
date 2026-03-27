@@ -1,41 +1,14 @@
 import re
 import unittest
-import uuid
 from typing import List, NoReturn, Union
 
-
-class UsernameException(Exception):
-    pass
-
-
-class PaymentException(Exception):
-    pass
-
-
-class CreditCardException(Exception):
-    pass
-
-
-class BalanceException(Exception):
-    pass
-
-
-class UserAddEvent:
-    def __init__(self, actor, target):
-        self.id = str(uuid.uuid4())
-        self.actor = actor
-        self.target = target
-
-
-class Payment:
-
-    def __init__(self, amount, actor, target, note):
-        self.id = str(uuid.uuid4())
-        self.amount = float(amount)
-        self.actor = actor
-        self.target = target
-        self.note = note
-
+from entities import Payment, UserAddEvent
+from exceptions import (
+    BalanceException,
+    CreditCardException,
+    PaymentException,
+    UsernameException,
+)
 
 Activity = Union[Payment, UserAddEvent]
 
@@ -252,4 +225,5 @@ class TestUser(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    # unittest.main()
+    MiniVenmo().run()
