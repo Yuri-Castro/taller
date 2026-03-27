@@ -1,6 +1,6 @@
 import re
 import unittest
-from typing import List, NoReturn, Union
+from typing import Any, Callable, List, NoReturn, Optional, Union
 
 from entities import Payment, UserAddEvent
 from exceptions import (
@@ -15,19 +15,25 @@ Activity = Union[Payment, UserAddEvent]
 
 class User:
 
-    def __init__(self, username, useradd_event_callback=None):
-        self.credit_card_number = None
-        self.balance = 0.0
+    def __init__(
+        self,
+        username: str,
+        useradd_event_callback: Optional[Callable[[Any], Any]] = None,
+    ):
+        self.credit_card_number: Optional[str] = None
+        self.balance: float = 0.0
         self.activities = []
-        self.friends = []
-        self.useradd_event_callback = useradd_event_callback
+        self.friends: List["User"] = []
+        self.useradd_event_callback: Optional[Callable[[Any], Any]] = (
+            useradd_event_callback
+        )
 
         if self._is_valid_username(username):
             self.username = username
         else:
             raise UsernameException("Username not valid.")
 
-    def add_friend(self, new_friend):
+    def add_friend(self, new_friend: "User"):
         friendadd_event = UserAddEvent(actor=self, target=new_friend)
         self.friends.append(new_friend)
         self.register_activity(friendadd_event)
@@ -35,13 +41,13 @@ class User:
         if self.useradd_event_callback:
             self.useradd_event_callback([friendadd_event])
 
-    def add_to_balance(self, amount):
+    def add_to_balance(self, amount: float):
         self.balance += float(amount)
 
     def remove_from_balance(self, amount: float) -> NoReturn:
         self.balance -= float(amount)
 
-    def add_credit_card(self, credit_card_number):
+    def add_credit_card(self, credit_card_number: str):
         if self.credit_card_number is not None:
             raise CreditCardException("Only one credit card per user!")
 
@@ -51,7 +57,7 @@ class User:
         else:
             raise CreditCardException("Invalid credit card number.")
 
-    def pay(self, target, amount, note):
+    def pay(self, target: "User", amount: float, note: str):
         payment = None
         if self.balance < amount:
             payment = self.pay_with_card(target, amount, note)
@@ -90,7 +96,7 @@ class User:
 
         return payment
 
-    def pay_with_balance(self, target, amount, note):
+    def pay_with_balance(self, target: "User", amount: float, note: str):
         # TODO: add code here
 
         if self.username == target.username:
@@ -117,7 +123,9 @@ class User:
 
 
 class MiniVenmo:
-    def create_user(self, username: str, balance: float, credit_card_number: str):
+    def create_user(
+        self, username: str, balance: float, credit_card_number: str
+    ) -> User:
         user = User(username)
         user.add_credit_card(credit_card_number)
         user.add_to_balance(balance)
@@ -126,7 +134,7 @@ class MiniVenmo:
 
         return user
 
-    def render_feed(self, feed):
+    def render_feed(self, feed) -> NoReturn:
         # Bobby paid Carol $5.00 for Coffee
         # Carol paid Bobby $15.00 for Lunch
         for activity in feed:
@@ -134,13 +142,10 @@ class MiniVenmo:
                 print(
                     f"{activity.actor.username} added {activity.target.username} as Friend"
                 )
-                pass
             elif isinstance(activity, Payment):
                 print(
                     f"{activity.actor.username} paid {activity.target.username} ${activity.amount} for {activity.note} "
                 )
-
-        pass
 
     @classmethod
     def run(cls):
