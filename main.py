@@ -37,6 +37,9 @@ class Payment:
         self.note = note
 
 
+Activity = Union[Payment, UserAddEvent]
+
+
 class User:
 
     def __init__(self, username):
@@ -80,7 +83,9 @@ class User:
         if payment:
             self.register_activity(payment)
 
-    def register_activity(self, activities: Union[Payment, List[Payment]]) -> NoReturn:
+    def register_activity(
+        self, activities: Union[Activity, List[Activity]]
+    ) -> NoReturn:
         if not isinstance(activities, list):
             activities = [activities]
 
@@ -146,7 +151,12 @@ class MiniVenmo:
         # Bobby paid Carol $5.00 for Coffee
         # Carol paid Bobby $15.00 for Lunch
         for activity in feed:
-            if isinstance(activity, Payment):
+            if isinstance(activity, UserAddEvent):
+                print(
+                    f"{activity.actor.username} added {activity.target.username} as Friend"
+                )
+                pass
+            elif isinstance(activity, Payment):
                 print(
                     f"{activity.actor.username} paid {activity.target.username} ${activity.amount} for {activity.note} "
                 )
